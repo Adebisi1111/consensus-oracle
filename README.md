@@ -4,8 +4,8 @@ A GenLayer Intelligent Contract where **validators independently fetch multiple
 external price sources** and commit one agreed price on-chain, with drift
 re-checking.
 
-**Deployed on Bradbury (chain 4221):** `0x839D6474a5029788991BD8456a08c46818202254`
-**Explorer:** https://explorer-bradbury.genlayer.com/address/0x839D6474a5029788991BD8456a08c46818202254
+**Deployed on Bradbury (chain 4221):** `0x9257c8501Bcb9C6AFc8152f46Ec815AA799baDdc`
+**Explorer:** https://explorer-bradbury.genlayer.com/address/0x9257c8501Bcb9C6AFc8152f46Ec815AA799baDdc
 
 ---
 
@@ -76,6 +76,7 @@ contract code).
 | Field | Value |
 |---|---|
 | agreed price | **255152000000** (1e8 scale) |
+| contract | `0x9257c8501Bcb9C6AFc8152f46Ec815AA799baDdc` |
 | human-readable | **$2,551.52** |
 | sources used | 1 / 2 (CoinGecko live; Coinbase egress-blocked — quorum logic correct) |
 | consensus | `AGREE` |
@@ -113,6 +114,23 @@ returned `FINISHED_WITH_ERROR` with zero executions).
   `from genlayer import *`, `gl.Contract`, `gl.vm.run_nondet`)
 - `deploy.mjs` — deploy script (genlayer-js, code as UTF-8 string,
   `waitUntil: 'finalized'`)
+- `test_oracle.mjs` — on-chain test suite, **15 assertions, all passing**
+
+## Test suite
+
+```bash
+DEPLOY_PK=0x<key> node test_oracle.mjs     # 15 assertions, reads state back from chain
+```
+
+Latest run — **15 passed, 0 failed**:
+
+| Group | Assertions | Result |
+|---|---|---|
+| Honest multi-source read | 6 | PASS — price, sources, asset, reporter all committed |
+| Recheck drift status | 3 | PASS — `last_recheck` recorded, count incremented |
+| Duplicate `reading_id` rejected | 1 | PASS — `FINISHED_WITH_ERROR`, no overwrite |
+| All-dead sources rejected | 2 | PASS — no quorum, no reading committed |
+| Rigged leader rejected | 3 | PASS — `DISAGREE` ×5, `total_readings: 0` |
 
 ## Deploy
 
